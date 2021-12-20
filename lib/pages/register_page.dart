@@ -1,4 +1,5 @@
 //Packages
+import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get_it/get_it.dart';
@@ -33,6 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late DatabaseService _db;
   late CloudStorageService _cloudStorage;
   late NavigationService _navigation;
+
 
   String? _email;
   String? _password;
@@ -108,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
         } else {
           return RoundedImageNetwork(
             key: UniqueKey(),
-            imagePath: "https://i.pravatar.cc/150?img=65",
+            imagePath: 'https://www.freeiconspng.com/thumbs/person-icon/person-icon-5.png',
             size: _deviceHeight * 0.15,
           );
         }
@@ -132,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _name = _value;
                   });
                 },
-                regEx: r'.{8,}',
+                regEx: r'.{5,}',
                 hintText: "Name",
                 obscureText: false),
             CustomTextFormField(
@@ -172,12 +174,15 @@ class _RegisterPageState extends State<RegisterPage> {
           String? _uid = await _auth.registerUserUsingEmailAndPassword(
               _email!, _password!);
           String? _imageURL =
-              await _cloudStorage.saveUserImageToStorage(_uid!, _profileImage!);
+          await _cloudStorage.saveUserImageToStorage(_uid!, _profileImage!);
           await _db.createUser(_uid, _email!, _name!, _imageURL!);
-          await _auth.logout();
-          await _auth.loginUsingEmailAndPassword(_email!, _password!);
+          SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
+          SharedPreferenceFunctions.saveUserEmailSharedPreference(
+              _email!);
+          SharedPreferenceFunctions.saveUserNameSharedPreference(
+              _name!);
+          _navigation.navigateToRoute('/home');
         }
-      },
-    );
+      },);
   }
 }

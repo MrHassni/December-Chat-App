@@ -1,3 +1,4 @@
+import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 
 //Packages
@@ -29,7 +30,34 @@ void main() {
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  bool? userIsLoggedIn = false;
+
+  @override
+  void initState() {
+    getLoggedInState();
+    super.initState();
+  }
+
+  getLoggedInState() async {
+    await SharedPreferenceFunctions.getUserLoggedInSharedPreference().then((value){
+      setState(() {
+// print(value);
+        userIsLoggedIn  = value;
+
+        value ??= false;
+
+        print(value);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -41,6 +69,7 @@ class MainApp extends StatelessWidget {
         )
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Chatify',
         theme: ThemeData(
           backgroundColor: Color.fromRGBO(36, 35, 49, 1.0),
@@ -50,7 +79,7 @@ class MainApp extends StatelessWidget {
           ),
         ),
         navigatorKey: NavigationService.navigatorKey,
-        initialRoute: '/login',
+        initialRoute: userIsLoggedIn == true ? '/home': '/login',
         routes: {
           '/login': (BuildContext _context) => LoginPage(),
           '/register': (BuildContext _context) => RegisterPage(),

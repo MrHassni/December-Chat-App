@@ -1,4 +1,7 @@
 //Packages
+import 'package:chatify_app/services/data_base.dart';
+import 'package:chatify_app/services/shared_preference_function.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
@@ -31,6 +34,8 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _email;
   String? _password;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -128,11 +133,37 @@ class _LoginPageState extends State<LoginPage> {
       name: "Login",
       height: _deviceHeight * 0.065,
       width: _deviceWidth * 0.65,
-      onPressed: () {
-        if (_loginFormKey.currentState!.validate()) {
-          _loginFormKey.currentState!.save();
-          _auth.loginUsingEmailAndPassword(_email!, _password!);
-        }
+      onPressed: () async {
+
+      if (_loginFormKey.currentState!.validate()) {
+        _loginFormKey.currentState!.save();
+
+        _auth.loginUsingEmailAndPassword(_email!, _password!).then((_) async {
+
+          QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("Users").get();
+          for (int i = 0; i < querySnapshot.docs.length; i++) {
+            var a = querySnapshot.docs[i];
+            print(a.id);
+          }
+
+          QuerySnapshot userInfoSnapshot =
+              await DatabaseMethods().getUserByUserEmail(_email!);
+          print(userInfoSnapshot.docs.length.toString());
+        SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
+            SharedPreferenceFunctions.saveUserNameSharedPreference(userInfoSnapshot.docs.first["name"]);
+        print(userInfoSnapshot.docs.first["name"] + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' );
+        SharedPreferenceFunctions.saveUserEmailSharedPreference(userInfoSnapshot.docs.first["email"]);
+          print(userInfoSnapshot.docs.first["email"] + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' );
+
+        _navigation.navigateToRoute('/home');
+        });
+
+      }
+
+        // if (_loginFormKey.currentState!.validate()) {
+        //   _loginFormKey.currentState!.save();
+        //   _auth.loginUsingEmailAndPassword(_email!, _password!);
+        // }
       },
     );
   }

@@ -1,7 +1,9 @@
 //Packages
+import 'package:chatify_app/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //Providers
 import '../providers/authentication_provider.dart';
@@ -76,8 +78,11 @@ class _ChatsPageState extends State<ChatsPage> {
                     Icons.logout,
                     color: Color.fromRGBO(0, 82, 218, 1.0),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     _auth.logout();
+                    final prefs = await  SharedPreferences.getInstance();
+                    await prefs.clear();
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
                   },
                 ),
               ),
