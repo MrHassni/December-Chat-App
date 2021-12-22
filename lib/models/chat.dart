@@ -9,7 +9,7 @@ class Chat {
   final List<ChatUser> members;
   List<ChatMessage> messages;
 
-  late final List<ChatUser> _recepients;
+  late final List<ChatUser> _recipients;
 
   Chat({
     required this.uid,
@@ -19,22 +19,22 @@ class Chat {
     required this.activity,
     required this.group,
   }) {
-    _recepients = members.where((_i) => _i.uid != currentUserUid).toList();
+    _recipients = members.where((_i) => _i.uid != currentUserUid).toList();
   }
 
-  List<ChatUser> recepients() {
-    return _recepients;
+  List<ChatUser> recipients() {
+    return _recipients;
   }
 
   String title() {
     return !group
-        ? _recepients.first.name
-        : _recepients.map((_user) => _user.name).join(", ");
+        ? _recipients.first.name
+        : _recipients.map((_user) => _user.name).join(", ");
   }
 
   String imageURL() {
     return !group
-        ? _recepients.first.imageURL
+        ? _recipients.first.imageURL
         : "https://e7.pngegg.com/pngimages/380/670/png-clipart-group-chat-logo-blue-area-text-symbol-metroui-apps-live-messenger-alt-2-blue-text.png";
   }
 }

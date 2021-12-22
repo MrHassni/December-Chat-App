@@ -1,4 +1,6 @@
 //Packages
+import 'dart:io';
+
 import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -14,7 +16,6 @@ import '../services/navigation_service.dart';
 //Widgets
 import '../widgets/custom_input_fields.dart';
 import '../widgets/rounded_button.dart';
-import '../widgets/rounded_image.dart';
 
 //Providers
 import '../providers/authentication_provider.dart';
@@ -40,8 +41,9 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _password;
   String? _name;
   PlatformFile? _profileImage;
-
+  late File urlFile;
   final _registerFormKey = GlobalKey<FormState>();
+  bool? photoAdded;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +72,10 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _profileImageField(),
+            Visibility(
+                visible: photoAdded == false,
+                child:Text('Add Profile Photo',style: TextStyle(color: Colors.red,fontSize: 10),)
+            ),
             SizedBox(
               height: _deviceHeight * 0.05,
             ),
@@ -95,6 +101,10 @@ class _RegisterPageState extends State<RegisterPage> {
             setState(
               () {
                 _profileImage = _file;
+                if(_profileImage != null && _profileImage!.path != ''){
+                  photoAdded = true;
+                }
+                print('assigned' + _profileImage.toString());
               },
             );
           },
@@ -102,16 +112,15 @@ class _RegisterPageState extends State<RegisterPage> {
       },
       child: () {
         if (_profileImage != null) {
-          return RoundedImageFile(
-            key: UniqueKey(),
-            image: _profileImage!,
-            size: _deviceHeight * 0.15,
-          );
+          return
+            CircleAvatar(
+                radius: 50,
+                backgroundImage: FileImage( File(_profileImage!.path.toString())),
+            );
         } else {
-          return RoundedImageNetwork(
-            key: UniqueKey(),
-            imagePath: 'https://www.freeiconspng.com/thumbs/person-icon/person-icon-5.png',
-            size: _deviceHeight * 0.15,
+          return CircleAvatar(
+            radius: 50,
+            backgroundImage: NetworkImage('https://cdn.icon-icons.com/icons2/1674/PNG/512/person_110935.png'),
           );
         }
       }(),
@@ -181,7 +190,18 @@ class _RegisterPageState extends State<RegisterPage> {
               _email!);
           SharedPreferenceFunctions.saveUserNameSharedPreference(
               _name!);
+          SharedPreferenceFunctions.saveUserImageSharedPreference(
+              _imageURL);
+          print(_imageURL);
           _navigation.navigateToRoute('/home');
+          setState(() {
+            photoAdded=true;
+          });
+        }
+        else{
+          setState(() {
+            photoAdded = false;
+          });
         }
       },);
   }

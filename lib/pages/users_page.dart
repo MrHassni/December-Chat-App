@@ -1,7 +1,8 @@
 //Packages
+import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //Providers
 import '../providers/authentication_provider.dart';
@@ -11,10 +12,10 @@ import '../providers/users_page_provider.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/custom_input_fields.dart';
 import '../widgets/custom_list_view_tiles.dart';
-import '../widgets/rounded_button.dart';
 
 //Models
 import '../models/chat_user.dart';
+import 'login_page.dart';
 
 class UsersPage extends StatefulWidget {
   @override
@@ -32,6 +33,17 @@ class _UsersPageState extends State<UsersPage> {
 
   final TextEditingController _searchFieldTextEditingController =
       TextEditingController();
+  String? userImage ;
+
+  getImage() async {
+    await SharedPreferenceFunctions.getUserImageSharedPreference().then((value){
+      setState(() {
+        userImage  = value;
+        print(value);
+      });
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,40 +64,127 @@ class _UsersPageState extends State<UsersPage> {
     return Builder(
       builder: (BuildContext _context) {
         _pageProvider = _context.watch<UsersPageProvider>();
-        return Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: _deviceWidth * 0.03, vertical: _deviceHeight * 0.02),
+        return userImage == null ? Center(child: ((){
+          print('Getting Image');
+          getImage();
+          return CircularProgressIndicator();
+        })()) : Container(
+          padding: EdgeInsets.only(
+              left: _deviceWidth * 0.03,right: _deviceWidth * 0.03, top: _deviceHeight * 0.02),
           height: _deviceHeight * 0.98,
           width: _deviceWidth * 0.97,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Stack(
             children: [
-              TopBar(
-                'Users',
-                primaryAction: IconButton(
-                  icon: Icon(
-                    Icons.logout,
-                    color: Color.fromRGBO(0, 82, 218, 1.0),
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  TopBar(
+                    'Users',
+                    primaryAction: GestureDetector(
+                      onTap:()=>  showDialog(
+                          context: context, builder: (_) {
+                        return Dialog(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          child: Card(
+                              elevation: 5,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),),
+                              child:  Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                      alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.all(10),
+                                      child: Text('Do You Want To LogOut?')),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text(
+                                          'No',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.w900),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          side: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2.0,
+                                          ),
+                                          primary: Colors.white,
+                                          elevation: 0,
+                                          fixedSize: Size(
+                                              MediaQuery.of(context).size.width * 0.35,
+                                              MediaQuery.of(context).size.height *
+                                                  0.05),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(25)),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          _auth.logout();
+                                          final prefs = await  SharedPreferences.getInstance();
+                                          await prefs.clear();
+                                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
+                                        },
+                                        child: const Text(
+                                          'Yes',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w900),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          primary: Theme.of(context).primaryColor,
+                                          fixedSize: Size(
+                                              MediaQuery.of(context).size.width * 0.35,
+                                              MediaQuery.of(context).size.height *
+                                                  0.05),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(25)),
+                                        ),
+                                      ),
+
+                                    ],),
+                                ],
+                              )
+                          ),
+
+                        );
+                      }),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(userImage!),
+                      ),
+                    ),
                   ),
-                  onPressed: () {
-                    _auth.logout();
-                  },
-                ),
+                  CustomTextField(
+                    onChanged:  (_value) {
+                      _pageProvider.getUsers(name: _value);
+                    },
+                    onEditingComplete: (_value) {
+                      _pageProvider.getUsers(name: _value);
+                      FocusScope.of(context).unfocus();
+                    },
+                    hintText: "Search...",
+                    obscureText: false,
+                    controller: _searchFieldTextEditingController,
+                    icon: Icons.search,
+                  ),
+                  _usersList(),
+                ],
               ),
-              CustomTextField(
-                onEditingComplete: (_value) {
-                  _pageProvider.getUsers(name: _value);
-                  FocusScope.of(context).unfocus();
-                },
-                hintText: "Search...",
-                obscureText: false,
-                controller: _searchFieldTextEditingController,
-                icon: Icons.search,
-              ),
-              _usersList(),
-              _createChatButton(),
+              Container(
+                  height: _deviceHeight,
+                  width: _deviceWidth,
+                  alignment: Alignment.bottomCenter,
+                  child: _createChatButton()),
             ],
           ),
         );
@@ -141,16 +240,29 @@ class _UsersPageState extends State<UsersPage> {
   Widget _createChatButton() {
     return Visibility(
       visible: _pageProvider.selectedUsers.isNotEmpty,
-      child: RoundedButton(
-        name: _pageProvider.selectedUsers.length == 1
-            ? "Chat With ${_pageProvider.selectedUsers.first.name}"
-            : "Create Group Chat",
-        height: _deviceHeight * 0.08,
-        width: _deviceWidth * 0.80,
-        onPressed: () {
+      child:
+      ElevatedButton(
+        onPressed: ()  {
           _pageProvider.createChat();
         },
-      ),
+        child:  Text(
+            _pageProvider.selectedUsers.length == 1
+                ? "Chat With ${_pageProvider.selectedUsers.first.name}"
+                : "Create Group Chat",
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600),
+        ),
+        style: ElevatedButton.styleFrom(
+          primary: Theme.of(context).primaryColor,
+          fixedSize: Size(
+              MediaQuery.of(context).size.width * 0.5,
+              MediaQuery.of(context).size.height *
+                  0.060),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25)),
+        ),
+      )
     );
   }
 }

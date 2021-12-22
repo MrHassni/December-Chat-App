@@ -29,7 +29,7 @@ class AuthenticationProvider extends ChangeNotifier {
         _databaseService.getUser(_user.uid).then(
           (_snapshot) {
             Map<String, dynamic> _userData =
-                _snapshot.data()! as Map<String, dynamic>;
+                _snapshot.data() as Map<String, dynamic>;
             user = ChatUser.fromJSON(
               {
                 "uid": _user.uid,

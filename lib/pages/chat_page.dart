@@ -124,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
               return Container(
                 child: CustomChatListViewTile(
                   deviceHeight: _deviceHeight,
-                  width: _deviceWidth * 0.80,
+                  width: _deviceWidth * 0.70,
                   message: _message,
                   isOwnMessage: _isOwnMessage,
                   sender: this

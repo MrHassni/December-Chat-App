@@ -42,18 +42,21 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final TextEditingController controller;
   IconData? icon;
+   Function(String)? onChanged;
 
   CustomTextField(
       {required this.onEditingComplete,
       required this.hintText,
       required this.obscureText,
       required this.controller,
-      this.icon});
+      this.icon,
+      this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      onChanged: onChanged,
       onEditingComplete: () => onEditingComplete(controller.value.text),
       cursorColor: Colors.white,
       style: TextStyle(color: Colors.white),

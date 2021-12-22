@@ -1,5 +1,6 @@
 //Packages
 import 'package:chatify_app/pages/login_page.dart';
+import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:get_it/get_it.dart';
@@ -38,6 +39,17 @@ class _ChatsPageState extends State<ChatsPage> {
   late AuthenticationProvider _auth;
   late NavigationService _navigation;
   late ChatsPageProvider _pageProvider;
+  String? userImage ;
+
+  getImage() async {
+    await SharedPreferenceFunctions.getUserImageSharedPreference().then((value){
+      setState(() {
+        userImage  = value;
+        print(value);
+      });
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +71,13 @@ class _ChatsPageState extends State<ChatsPage> {
     return Builder(
       builder: (BuildContext _context) {
         _pageProvider = _context.watch<ChatsPageProvider>();
-        return Container(
+        return userImage == null
+            ?  Center(child: ((){
+          print('Getting Image');
+              getImage();
+              return CircularProgressIndicator();
+        })())
+            : Container(
           padding: EdgeInsets.symmetric(
             horizontal: _deviceWidth * 0.03,
             vertical: _deviceHeight * 0.02,
@@ -73,17 +91,86 @@ class _ChatsPageState extends State<ChatsPage> {
             children: [
               TopBar(
                 'Chats',
-                primaryAction: IconButton(
-                  icon: Icon(
-                    Icons.logout,
-                    color: Color.fromRGBO(0, 82, 218, 1.0),
+                primaryAction: GestureDetector(
+                  onTap:()=>  showDialog(
+                      context: context, builder: (_) {
+                        return Dialog(
+                          elevation: 0,
+                          backgroundColor: Colors.transparent,
+                          child: Card(
+                              elevation: 5,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),),
+                              child:  Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.all(10),
+                                      child: Text('Do You Want To LogOut?')),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text(
+                                          'No',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.w900),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          side: const BorderSide(
+                                            color: Colors.red,
+                                            width: 2.0,
+                                          ),
+                                          primary: Colors.white,
+                                          elevation: 0,
+                                          fixedSize: Size(
+                                              MediaQuery.of(context).size.width * 0.35,
+                                              MediaQuery.of(context).size.height *
+                                                  0.05),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(25)),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          _auth.logout();
+                                          final prefs = await  SharedPreferences.getInstance();
+                                          await prefs.clear();
+                                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
+                                        },
+                                        child: const Text(
+                                          'Yes',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w900),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          primary: Theme.of(context).primaryColor,
+                                          fixedSize: Size(
+                                              MediaQuery.of(context).size.width * 0.35,
+                                              MediaQuery.of(context).size.height *
+                                                  0.05),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(25)),
+                                        ),
+                                      ),
+
+                                    ],),
+                                ],
+                              )
+                          ),
+
+                        );
+                  }),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(userImage!),
                   ),
-                  onPressed: () async {
-                    _auth.logout();
-                    final prefs = await  SharedPreferences.getInstance();
-                    await prefs.clear();
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
-                  },
                 ),
               ),
               _chatsList(),
@@ -96,13 +183,18 @@ class _ChatsPageState extends State<ChatsPage> {
 
   Widget _chatsList() {
     List<Chat>? _chats = _pageProvider.chats;
-    return Expanded(
+    return _chats == null ? Expanded(
+      child: Center(child: CircularProgressIndicator(
+        color: Colors.white,
+      )),
+    ) : Expanded(
       child: (() {
-        if (_chats != null) {
+        print(_chats.length);
+        if (_chats.isNotEmpty) {
           if (_chats.length != 0) {
             return ListView.builder(
               itemCount: _chats.length,
-              itemBuilder: (BuildContext _context, int _index) {
+              itemBuilder: (_context, _index) {
                 return _chatTile(
                   _chats[_index],
                 );
@@ -111,15 +203,16 @@ class _ChatsPageState extends State<ChatsPage> {
           } else {
             return Center(
               child: Text(
-                "No Chats Found.",
+                "No Chats Found tt.",
                 style: TextStyle(color: Colors.white),
               ),
             );
           }
         } else {
           return Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
+            child: Text(
+              "No Chats Found.",
+              style: TextStyle(color: Colors.white),
             ),
           );
         }
@@ -128,8 +221,8 @@ class _ChatsPageState extends State<ChatsPage> {
   }
 
   Widget _chatTile(Chat _chat) {
-    List<ChatUser> _recepients = _chat.recepients();
-    bool _isActive = _recepients.any((_d) => _d.wasRecentlyActive());
+    List<ChatUser> _recipients = _chat.recipients();
+    bool _isActive = _recipients.any((_d) => _d.wasRecentlyActive());
     String _subtitleText = "";
     if (_chat.messages.isNotEmpty) {
       _subtitleText = _chat.messages.first.type != MessageType.TEXT

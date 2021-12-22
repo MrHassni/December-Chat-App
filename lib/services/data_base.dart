@@ -1,33 +1,38 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
+
+  static DatabaseMethods? _manager;
+  DatabaseMethods._();
+  static DatabaseMethods get instance => _manager ??= DatabaseMethods._();
+
   getUserByUserName(String userName) async {
     return await FirebaseFirestore.instance
-        .collection('users')
-        .where('userName', isEqualTo: userName)
+        .collection('Users')
+        .where('name', isEqualTo: userName)
         .get();
   }
 
   getUserByUserEmail(String userEmail) async {
     return await FirebaseFirestore.instance
-        .collection('users')
-        .where('userEmail', isEqualTo: userEmail)
+        .collection('Users')
+        .where('email', isEqualTo: userEmail)
         .get();
   }
 
   uploadUserInfo(userMap) {
-    FirebaseFirestore.instance.collection("users").add(userMap);
+    FirebaseFirestore.instance.collection("Users").add(userMap);
   }
 
-  createChatRoom(String chatRoomID, chatRoomMap) {
-    FirebaseFirestore.instance
-        .collection("chatRoom")
-        .doc(chatRoomID)
-        .set(chatRoomMap)
-        .catchError((e) {
-      print(e);
-    });
-  }
+  // createChatRoom(String chatRoomID, chatRoomMap) {
+  //   FirebaseFirestore.instance
+  //       .collection("chatRoom")
+  //       .doc(chatRoomID)
+  //       .set(chatRoomMap)
+  //       .catchError((e) {
+  //     print(e);
+  //   });
+  // }
 
   getConversationMessages(chatRoomID) async {
     return await FirebaseFirestore.instance

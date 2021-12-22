@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
     return Container(
       height: _deviceHeight * 0.10,
       child: Text(
-        'Chatify',
+        'Slam Chat',
         style: TextStyle(
           color: Colors.white,
           fontSize: 40,
@@ -140,21 +140,14 @@ class _LoginPageState extends State<LoginPage> {
 
         _auth.loginUsingEmailAndPassword(_email!, _password!).then((_) async {
 
-          QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("Users").get();
-          for (int i = 0; i < querySnapshot.docs.length; i++) {
-            var a = querySnapshot.docs[i];
-            print(a.id);
-          }
-
           QuerySnapshot userInfoSnapshot =
-              await DatabaseMethods().getUserByUserEmail(_email!);
-          print(userInfoSnapshot.docs.length.toString());
+              await DatabaseMethods.instance.getUserByUserEmail(_email!);
         SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
-            SharedPreferenceFunctions.saveUserNameSharedPreference(userInfoSnapshot.docs.first["name"]);
-        print(userInfoSnapshot.docs.first["name"] + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' );
-        SharedPreferenceFunctions.saveUserEmailSharedPreference(userInfoSnapshot.docs.first["email"]);
-          print(userInfoSnapshot.docs.first["email"] + 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' );
+            SharedPreferenceFunctions.saveUserNameSharedPreference(userInfoSnapshot.docs[0]["name"]);
+        print(userInfoSnapshot.docs[0]["name"] + 'This is name and image url' + userInfoSnapshot.docs[0]["image"]);
 
+        SharedPreferenceFunctions.saveUserEmailSharedPreference(userInfoSnapshot.docs[0]["email"]);
+          SharedPreferenceFunctions.saveUserImageSharedPreference(userInfoSnapshot.docs[0]["image"]);
         _navigation.navigateToRoute('/home');
         });
 

@@ -38,6 +38,7 @@ class ChatsPageProvider extends ChangeNotifier {
 
   void getChats() async {
     try {
+
       _chatsStream =
           _db.getChatsForUser(_auth.user.uid).listen((_snapshot) async {
         chats = await Future.wait(
@@ -47,6 +48,7 @@ class ChatsPageProvider extends ChangeNotifier {
                   _d.data() as Map<String, dynamic>;
               //Get Users In Chat
               List<ChatUser> _members = [];
+
               for (var _uid in _chatData["members"]) {
                 DocumentSnapshot _userSnapshot = await _db.getUser(_uid);
                 Map<String, dynamic> _userData =
@@ -56,6 +58,7 @@ class ChatsPageProvider extends ChangeNotifier {
                   ChatUser.fromJSON(_userData),
                 );
               }
+
               //Get Last Message For Chat
               List<ChatMessage> _messages = [];
               QuerySnapshot _chatMessage =

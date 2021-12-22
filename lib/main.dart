@@ -2,7 +2,6 @@ import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 
 //Packages
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:provider/provider.dart';
 
 //Services
