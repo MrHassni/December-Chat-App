@@ -44,16 +44,22 @@ class TextMessageBubble extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            message.content,
-            style: TextStyle(
-              color: Colors.white,
+          Container(
+            margin: EdgeInsets.only(top: 5),
+            child: Text(
+              message.content,
+              style: TextStyle(
+                color: Colors.white,
+              ),
             ),
           ),
-          Text(
-            timeago.format(message.sentTime),
-            style: TextStyle(
-              color: Colors.white70,
+          Container(
+            margin: EdgeInsets.only(bottom: 1),
+            child: Text(
+              timeago.format(message.sentTime),
+              style: TextStyle(
+                color: Colors.white70,
+              ),
             ),
           ),
         ],

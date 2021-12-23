@@ -1,4 +1,9 @@
 //Packages
+import 'package:chatify_app/pages/chat_page.dart';
+import 'package:chatify_app/pages/chats_page.dart';
+import 'package:chatify_app/pages/home_page.dart';
+import 'package:chatify_app/providers/chat_page_provider.dart';
+import 'package:chatify_app/providers/chats_page_provider.dart';
 import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,23 +32,26 @@ class UsersPage extends StatefulWidget {
 class _UsersPageState extends State<UsersPage> {
   late double _deviceHeight;
   late double _deviceWidth;
+  late String secondUserUID;
+  bool alreadyAvailable = false;
+   int? indexOfSecondUser ;
 
   late AuthenticationProvider _auth;
-  late UsersPageProvider _pageProvider;
-
+  late UsersPageProvider _usersPageProvider;
+  late ChatsPageProvider _chatsPageProvider;
   final TextEditingController _searchFieldTextEditingController =
       TextEditingController();
-  String? userImage ;
+  String? userImage;
 
   getImage() async {
-    await SharedPreferenceFunctions.getUserImageSharedPreference().then((value){
+    await SharedPreferenceFunctions.getUserImageSharedPreference()
+        .then((value) {
       setState(() {
-        userImage  = value;
+        userImage = value;
         print(value);
       });
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +63,9 @@ class _UsersPageState extends State<UsersPage> {
         ChangeNotifierProvider<UsersPageProvider>(
           create: (_) => UsersPageProvider(_auth),
         ),
+        ChangeNotifierProvider<ChatsPageProvider>(
+          create: (_) => ChatsPageProvider(_auth),
+        ),
       ],
       child: _buildUI(),
     );
@@ -63,137 +74,189 @@ class _UsersPageState extends State<UsersPage> {
   Widget _buildUI() {
     return Builder(
       builder: (BuildContext _context) {
-        _pageProvider = _context.watch<UsersPageProvider>();
-        return userImage == null ? Center(child: ((){
-          print('Getting Image');
-          getImage();
-          return CircularProgressIndicator();
-        })()) : Container(
-          padding: EdgeInsets.only(
-              left: _deviceWidth * 0.03,right: _deviceWidth * 0.03, top: _deviceHeight * 0.02),
-          height: _deviceHeight * 0.98,
-          width: _deviceWidth * 0.97,
-          child: Stack(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TopBar(
-                    'Users',
-                    primaryAction: GestureDetector(
-                      onTap:()=>  showDialog(
-                          context: context, builder: (_) {
-                        return Dialog(
-                          elevation: 0,
-                          backgroundColor: Colors.transparent,
-                          child: Card(
-                              elevation: 5,
-                              margin: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),),
-                              child:  Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                      alignment: Alignment.topLeft,
-                                      margin: EdgeInsets.all(10),
-                                      child: Text('Do You Want To LogOut?')),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          'No',
-                                          style: TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.w900),
+        _usersPageProvider = _context.watch<UsersPageProvider>();
+        _chatsPageProvider = _context.watch<ChatsPageProvider>();
+        return userImage == null
+            ? Center(child: (() {
+                print('Getting Image');
+                getImage();
+                return CircularProgressIndicator();
+              })())
+            : Container(
+                padding: EdgeInsets.only(
+                    left: _deviceWidth * 0.03,
+                    right: _deviceWidth * 0.03,
+                    top: _deviceHeight * 0.02),
+                height: _deviceHeight * 0.98,
+                width: _deviceWidth * 0.97,
+                child: Stack(
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TopBar(
+                          'Users',
+                          primaryAction: GestureDetector(
+                            onTap: () => showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return Dialog(
+                                    elevation: 0,
+                                    backgroundColor: Colors.transparent,
+                                    child: Card(
+                                        color: Theme.of(context)
+                                            .scaffoldBackgroundColor,
+                                        elevation: 5,
+                                        margin: EdgeInsets.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
                                         ),
-                                        style: ElevatedButton.styleFrom(
-                                          side: const BorderSide(
-                                            color: Colors.red,
-                                            width: 2.0,
-                                          ),
-                                          primary: Colors.white,
-                                          elevation: 0,
-                                          fixedSize: Size(
-                                              MediaQuery.of(context).size.width * 0.35,
-                                              MediaQuery.of(context).size.height *
-                                                  0.05),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25)),
-                                        ),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          _auth.logout();
-                                          final prefs = await  SharedPreferences.getInstance();
-                                          await prefs.clear();
-                                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
-                                        },
-                                        child: const Text(
-                                          'Yes',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w900),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          primary: Theme.of(context).primaryColor,
-                                          fixedSize: Size(
-                                              MediaQuery.of(context).size.width * 0.35,
-                                              MediaQuery.of(context).size.height *
-                                                  0.05),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25)),
-                                        ),
-                                      ),
-
-                                    ],),
-                                ],
-                              )
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                                alignment: Alignment.topLeft,
+                                                margin: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+                                                child: Text(
+                                                  'Do You Want To LogOut?',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                      color: Colors.white),
+                                                )),
+                                            Container(
+                                              margin: EdgeInsets.only(bottom: 5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceEvenly,
+                                                children: [
+                                                  ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text(
+                                                      'No',
+                                                      style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontWeight:
+                                                          FontWeight.w900),
+                                                    ),
+                                                    style:
+                                                    ElevatedButton.styleFrom(
+                                                      side: const BorderSide(
+                                                        color: Colors.red,
+                                                        width: 2.0,
+                                                      ),
+                                                      primary: Colors.transparent,
+                                                      elevation: 0,
+                                                      fixedSize: Size(
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                              0.3,
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .height *
+                                                              0.05),
+                                                      shape:
+                                                      RoundedRectangleBorder(
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(
+                                                              25)),
+                                                    ),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () async {
+                                                      _auth.signOut();
+                                                      final prefs =
+                                                      await SharedPreferences
+                                                          .getInstance();
+                                                      await prefs.clear();
+                                                      Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              LoginPage(),
+                                                        ),
+                                                      );
+                                                    },
+                                                    child:  Text(
+                                                      'Yes',
+                                                      style: TextStyle(
+                                                          color: Theme.of(context).primaryColor,
+                                                          fontWeight:
+                                                          FontWeight.w900),
+                                                    ),
+                                                    style:
+                                                    ElevatedButton.styleFrom(
+                                                      side:  BorderSide(
+                                                        color: Theme.of(context).primaryColor,
+                                                        width: 2.0,
+                                                      ),
+                                                      primary: Colors.transparent,
+                                                      elevation: 0,
+                                                      fixedSize: Size(
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width *
+                                                              0.3,
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .height *
+                                                              0.05),
+                                                      shape:
+                                                      RoundedRectangleBorder(
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(
+                                                              25)),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        )),
+                                  );
+                                }),
+                            child: CircleAvatar(
+                              backgroundImage: NetworkImage(userImage!),
+                            ),
                           ),
-
-                        );
-                      }),
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(userImage!),
-                      ),
+                        ),
+                        CustomTextField(
+                          onChanged: (_value) {
+                            _usersPageProvider.getUsers(name: _value);
+                          },
+                          onEditingComplete: (_value) {
+                            _usersPageProvider.getUsers(name: _value);
+                            FocusScope.of(context).unfocus();
+                          },
+                          hintText: "Search...",
+                          obscureText: false,
+                          controller: _searchFieldTextEditingController,
+                          icon: Icons.search,
+                        ),
+                        _usersList(),
+                      ],
                     ),
-                  ),
-                  CustomTextField(
-                    onChanged:  (_value) {
-                      _pageProvider.getUsers(name: _value);
-                    },
-                    onEditingComplete: (_value) {
-                      _pageProvider.getUsers(name: _value);
-                      FocusScope.of(context).unfocus();
-                    },
-                    hintText: "Search...",
-                    obscureText: false,
-                    controller: _searchFieldTextEditingController,
-                    icon: Icons.search,
-                  ),
-                  _usersList(),
-                ],
-              ),
-              Container(
-                  height: _deviceHeight,
-                  width: _deviceWidth,
-                  alignment: Alignment.bottomCenter,
-                  child: _createChatButton()),
-            ],
-          ),
-        );
+                    Container(
+                        height: _deviceHeight,
+                        width: _deviceWidth,
+                        alignment: Alignment.bottomCenter,
+                        child: _createChatButton()),
+                  ],
+                ),
+              );
       },
     );
   }
 
   Widget _usersList() {
-    List<ChatUser>? _users = _pageProvider.users;
+    List<ChatUser>? _users = _usersPageProvider.users;
     return Expanded(child: () {
       if (_users != null) {
         if (_users.length != 0) {
@@ -206,11 +269,11 @@ class _UsersPageState extends State<UsersPage> {
                 subtitle: "Last Active: ${_users[_index].lastDayActive()}",
                 imagePath: _users[_index].imageURL,
                 isActive: _users[_index].wasRecentlyActive(),
-                isSelected: _pageProvider.selectedUsers.contains(
+                isSelected: _usersPageProvider.selectedUsers.contains(
                   _users[_index],
                 ),
                 onTap: () {
-                  _pageProvider.updateSelectedUsers(
+                  _usersPageProvider.updateSelectedUsers(
                     _users[_index],
                   );
                 },
@@ -239,30 +302,45 @@ class _UsersPageState extends State<UsersPage> {
 
   Widget _createChatButton() {
     return Visibility(
-      visible: _pageProvider.selectedUsers.isNotEmpty,
-      child:
-      ElevatedButton(
-        onPressed: ()  {
-          _pageProvider.createChat();
-        },
-        child:  Text(
-            _pageProvider.selectedUsers.length == 1
-                ? "Chat With ${_pageProvider.selectedUsers.first.name}"
+        visible: _usersPageProvider.selectedUsers.isNotEmpty,
+        child: ElevatedButton(
+          onPressed: () {
+
+            if(_usersPageProvider.selectedUsers.length != 1){
+              _usersPageProvider.createChat();
+            }else{
+
+            for(int index = 0; index < _chatsPageProvider.chats!.length; index++) {
+              secondUserUID = _chatsPageProvider.chats![index].members.first.uid;
+              if(_usersPageProvider.selectedUsers[0].uid == secondUserUID){
+                alreadyAvailable = true;
+                indexOfSecondUser = index;
+                break;
+              }else{
+                alreadyAvailable = false;
+              }
+            }
+            if(alreadyAvailable == true && indexOfSecondUser != null){
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage(),),);
+            }else{
+              indexOfSecondUser = null;
+              print('false' + indexOfSecondUser.toString());
+              _usersPageProvider.createChat();
+            }}
+          },
+          child: Text(
+            _usersPageProvider.selectedUsers.length == 1
+                ? "Chat With ${_usersPageProvider.selectedUsers.first.name}"
                 : "Create Group Chat",
-          style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600),
-        ),
-        style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).primaryColor,
-          fixedSize: Size(
-              MediaQuery.of(context).size.width * 0.5,
-              MediaQuery.of(context).size.height *
-                  0.060),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25)),
-        ),
-      )
-    );
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          style: ElevatedButton.styleFrom(
+            primary: Theme.of(context).primaryColor,
+            fixedSize: Size(MediaQuery.of(context).size.width * 0.5,
+                MediaQuery.of(context).size.height * 0.060),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+          ),
+        ));
   }
 }

@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             _loginButton(),
             SizedBox(
-              height: _deviceHeight * 0.02,
+              height: _deviceHeight * 0.01,
             ),
             _registerAccountLink(),
           ],
@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
         'Slam Chat',
         style: TextStyle(
           color: Colors.white,
-          fontSize: 40,
+          fontSize: 45,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -104,6 +104,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CustomTextFormField(
+              textInputType: TextInputType.emailAddress,
                 onSaved: (_value) {
                   setState(() {
                     _email = _value;
@@ -121,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                 },
                 regEx: r".{8,}",
                 hintText: "Password",
-                obscureText: true),
+                obscureText: false),
           ],
         ),
       ),
@@ -129,36 +130,67 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _loginButton() {
-    return RoundedButton(
-      name: "Login",
-      height: _deviceHeight * 0.065,
-      width: _deviceWidth * 0.65,
-      onPressed: () async {
+    return
+      ElevatedButton(
+        onPressed: () async {
 
-      if (_loginFormKey.currentState!.validate()) {
-        _loginFormKey.currentState!.save();
+          print(_email);
+          if (_loginFormKey.currentState!.validate()) {
+            _loginFormKey.currentState!.save();
 
-        _auth.loginUsingEmailAndPassword(_email!, _password!).then((_) async {
+            await _auth
+                .signInWithEmailAndPassword(
+                _email!, _password!)
+                .then((result) async {
+              if (result != null)  {
 
-          QuerySnapshot userInfoSnapshot =
+             // _auth.loginUsingEmailAndPassword(_email!, _password!).then((_) async {
+
+              QuerySnapshot userInfoSnapshot =
               await DatabaseMethods.instance.getUserByUserEmail(_email!);
-        SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
-            SharedPreferenceFunctions.saveUserNameSharedPreference(userInfoSnapshot.docs[0]["name"]);
-        print(userInfoSnapshot.docs[0]["name"] + 'This is name and image url' + userInfoSnapshot.docs[0]["image"]);
+              SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
+              SharedPreferenceFunctions.saveUserNameSharedPreference(userInfoSnapshot.docs[0]["name"]);
+              print(userInfoSnapshot.docs[0]["name"] + 'This is name and image url' + userInfoSnapshot.docs[0]["image"]);
 
-        SharedPreferenceFunctions.saveUserEmailSharedPreference(userInfoSnapshot.docs[0]["email"]);
-          SharedPreferenceFunctions.saveUserImageSharedPreference(userInfoSnapshot.docs[0]["image"]);
-        _navigation.navigateToRoute('/home');
-        });
-
-      }
-
-        // if (_loginFormKey.currentState!.validate()) {
-        //   _loginFormKey.currentState!.save();
-        //   _auth.loginUsingEmailAndPassword(_email!, _password!);
-        // }
-      },
-    );
+              SharedPreferenceFunctions.saveUserEmailSharedPreference(userInfoSnapshot.docs[0]["email"]);
+              SharedPreferenceFunctions.saveUserImageSharedPreference(userInfoSnapshot.docs[0]["image"]);
+              _navigation.navigateToRoute('/home');
+            }
+          });
+        }},
+        child:  Text(
+          'Login',
+          style: TextStyle(
+            fontSize: 18,
+              color: Theme.of(context).primaryColor,
+              fontWeight:
+              FontWeight.w900),
+        ),
+        style:
+        ElevatedButton.styleFrom(
+          side:  BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 2.0,
+          ),
+          primary: Colors.transparent,
+          elevation: 0,
+          fixedSize: Size(
+              MediaQuery.of(context)
+                  .size
+                  .width *
+                  0.6,
+              MediaQuery.of(context)
+                  .size
+                  .height *
+                  0.05),
+          shape:
+          RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius
+                  .circular(
+                  10)),
+        ),
+      );
   }
 
   Widget _registerAccountLink() {
@@ -168,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Text(
           'Don\'t have an account?',
           style: TextStyle(
-            color: Colors.blueAccent,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       ),

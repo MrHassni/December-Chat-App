@@ -78,7 +78,7 @@ class RoundedImageNetworkWithStatusIndicator extends RoundedImageNetwork {
           height: size * 0.20,
           width: size * 0.20,
           decoration: BoxDecoration(
-            color: isActive ? Colors.green : Colors.red,
+            color: isActive ? Colors.green : Colors.grey,
             borderRadius: BorderRadius.circular(size),
           ),
         ),

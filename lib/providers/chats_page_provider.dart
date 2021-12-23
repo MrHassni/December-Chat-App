@@ -21,7 +21,7 @@ class ChatsPageProvider extends ChangeNotifier {
 
   late DatabaseService _db;
 
-  List<Chat>? chats;
+  List<Chat>? chats = [];
 
   late StreamSubscription _chatsStream;
 

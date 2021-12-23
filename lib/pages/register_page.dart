@@ -81,12 +81,13 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             _registerForm(),
             SizedBox(
-              height: _deviceHeight * 0.05,
+              height: _deviceHeight * 0.04,
             ),
             _registerButton(),
             SizedBox(
-              height: _deviceHeight * 0.02,
+              height: _deviceHeight * 0.01,
             ),
+            _loginLink(),
           ],
         ),
       ),
@@ -141,12 +142,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 onSaved: (_value) {
                   setState(() {
                     _name = _value;
+
                   });
                 },
                 regEx: r'.{5,}',
                 hintText: "Name",
                 obscureText: false),
             CustomTextFormField(
+              textInputType: TextInputType.emailAddress,
                 onSaved: (_value) {
                   setState(() {
                     _email = _value;
@@ -164,7 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
                 regEx: r".{8,}",
                 hintText: "Password",
-                obscureText: true),
+                obscureText: false),
           ],
         ),
       ),
@@ -172,37 +175,84 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _registerButton() {
-    return RoundedButton(
-      name: "Register",
-      height: _deviceHeight * 0.065,
-      width: _deviceWidth * 0.65,
-      onPressed: () async {
-        if (_registerFormKey.currentState!.validate() &&
-            _profileImage != null) {
-          _registerFormKey.currentState!.save();
-          String? _uid = await _auth.registerUserUsingEmailAndPassword(
-              _email!, _password!);
-          String? _imageURL =
-          await _cloudStorage.saveUserImageToStorage(_uid!, _profileImage!);
-          await _db.createUser(_uid, _email!, _name!, _imageURL!);
-          SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
-          SharedPreferenceFunctions.saveUserEmailSharedPreference(
-              _email!);
-          SharedPreferenceFunctions.saveUserNameSharedPreference(
-              _name!);
-          SharedPreferenceFunctions.saveUserImageSharedPreference(
-              _imageURL);
-          print(_imageURL);
-          _navigation.navigateToRoute('/home');
-          setState(() {
-            photoAdded=true;
-          });
-        }
-        else{
-          setState(() {
-            photoAdded = false;
-          });
-        }
-      },);
+    return
+      ElevatedButton(
+        onPressed: () async {
+          if (_registerFormKey.currentState!.validate() &&
+              _profileImage != null) {
+
+            _registerFormKey.currentState!.save();
+
+            String? _uid = await _auth.registerUserUsingEmailAndPassword(
+                _email!, _password!);
+            String? _imageURL =
+            await _cloudStorage.saveUserImageToStorage(_uid!, _profileImage!);
+            await _db.createUser(_uid, _email!, _name!, _imageURL!);
+            SharedPreferenceFunctions.saveUserLoggedInSharedPreference(true);
+            SharedPreferenceFunctions.saveUserEmailSharedPreference(
+                _email!);
+            SharedPreferenceFunctions.saveUserNameSharedPreference(
+                _name!);
+            SharedPreferenceFunctions.saveUserImageSharedPreference(
+                _imageURL);
+            print(_imageURL);
+            _navigation.navigateToRoute('/home');
+            setState(() {
+              photoAdded=true;
+            });
+          }
+          else{
+            setState(() {
+              photoAdded = false;
+            });
+          }
+        },
+        child:  Text(
+          'Register',
+          style: TextStyle(
+              fontSize: 18,
+              color: Theme.of(context).primaryColor,
+              fontWeight:
+              FontWeight.w900),
+        ),
+        style:
+        ElevatedButton.styleFrom(
+          side:  BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 2.0,
+          ),
+          primary: Colors.transparent,
+          elevation: 0,
+          fixedSize: Size(
+              MediaQuery.of(context)
+                  .size
+                  .width *
+                  0.6,
+              MediaQuery.of(context)
+                  .size
+                  .height *
+                  0.05),
+          shape:
+          RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius
+                  .circular(
+                  10)),
+        ),
+      );
+  }
+
+  Widget _loginLink() {
+    return GestureDetector(
+      onTap: () => _navigation.navigateToRoute('/login'),
+      child: Container(
+        child: Text(
+          'Have an account?',
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+      ),
+    );
   }
 }

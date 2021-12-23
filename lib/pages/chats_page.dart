@@ -1,4 +1,6 @@
 //Packages
+import 'dart:async';
+
 import 'package:chatify_app/pages/login_page.dart';
 import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
@@ -98,74 +100,120 @@ class _ChatsPageState extends State<ChatsPage> {
                           elevation: 0,
                           backgroundColor: Colors.transparent,
                           child: Card(
+                              color: Theme.of(context)
+                                  .scaffoldBackgroundColor,
                               elevation: 5,
                               margin: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),),
-                              child:  Column(
+                                borderRadius:
+                                BorderRadius.circular(15),
+                              ),
+                              child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
-                                    alignment: Alignment.topLeft,
-                                      margin: EdgeInsets.all(10),
-                                      child: Text('Do You Want To LogOut?')),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          'No',
-                                          style: TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.w900),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          side: const BorderSide(
-                                            color: Colors.red,
-                                            width: 2.0,
+                                      alignment: Alignment.topLeft,
+                                      margin: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+                                      child: Text(
+                                        'Do You Want To LogOut?',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.white),
+                                      )),
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 5),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            'No',
+                                            style: TextStyle(
+                                                color: Colors.red,
+                                                fontWeight:
+                                                FontWeight.w900),
                                           ),
-                                          primary: Colors.white,
-                                          elevation: 0,
-                                          fixedSize: Size(
-                                              MediaQuery.of(context).size.width * 0.35,
-                                              MediaQuery.of(context).size.height *
-                                                  0.05),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25)),
+                                          style:
+                                          ElevatedButton.styleFrom(
+                                            side: const BorderSide(
+                                              color: Colors.red,
+                                              width: 2.0,
+                                            ),
+                                            primary: Colors.transparent,
+                                            elevation: 0,
+                                            fixedSize: Size(
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                    0.3,
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                    0.05),
+                                            shape:
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                BorderRadius
+                                                    .circular(
+                                                    25)),
+                                          ),
                                         ),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () async {
-                                          _auth.logout();
-                                          final prefs = await  SharedPreferences.getInstance();
-                                          await prefs.clear();
-                                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=> LoginPage(),),);
-                                        },
-                                        child: const Text(
-                                          'Yes',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w900),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            _auth.signOut();
+                                            final prefs =
+                                            await SharedPreferences
+                                                .getInstance();
+                                            await prefs.clear();
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LoginPage(),
+                                              ),
+                                            );
+                                          },
+                                          child:  Text(
+                                            'Yes',
+                                            style: TextStyle(
+                                                color: Theme.of(context).primaryColor,
+                                                fontWeight:
+                                                FontWeight.w900),
+                                          ),
+                                          style:
+                                          ElevatedButton.styleFrom(
+                                            side:  BorderSide(
+                                              color: Theme.of(context).primaryColor,
+                                              width: 2.0,
+                                            ),
+                                            primary: Colors.transparent,
+                                            elevation: 0,
+                                            fixedSize: Size(
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                    0.3,
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                    0.05),
+                                            shape:
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                BorderRadius
+                                                    .circular(
+                                                    25)),
+                                          ),
                                         ),
-                                        style: ElevatedButton.styleFrom(
-                                          primary: Theme.of(context).primaryColor,
-                                          fixedSize: Size(
-                                              MediaQuery.of(context).size.width * 0.35,
-                                              MediaQuery.of(context).size.height *
-                                                  0.05),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(25)),
-                                        ),
-                                      ),
-
-                                    ],),
+                                      ],
+                                    ),
+                                  ),
                                 ],
-                              )
-                          ),
-
+                              )),
                         );
                   }),
                   child: CircleAvatar(
@@ -186,8 +234,9 @@ class _ChatsPageState extends State<ChatsPage> {
     return _chats == null ? Expanded(
       child: Center(child: CircularProgressIndicator(
         color: Colors.white,
-      )),
-    ) : Expanded(
+      ),),
+    ) :
+    Expanded(
       child: (() {
         print(_chats.length);
         if (_chats.isNotEmpty) {
@@ -239,6 +288,7 @@ class _ChatsPageState extends State<ChatsPage> {
       onTap: () {
         _navigation.navigateToPage(
           ChatPage(chat: _chat),
+
         );
       },
     );

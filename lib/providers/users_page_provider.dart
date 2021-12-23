@@ -1,4 +1,5 @@
 //Packages
+import 'package:chatify_app/pages/chats_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';

@@ -10,6 +10,7 @@ import '../services/navigation_service.dart';
 
 //Models
 import '../models/chat_user.dart';
+import '../theUser.dart';
 
 class AuthenticationProvider extends ChangeNotifier {
   late final FirebaseAuth _auth;
@@ -50,15 +51,43 @@ class AuthenticationProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> loginUsingEmailAndPassword(
-      String _email, String _password) async {
+  TheUser? _userFromFirebaseUser(User user){
+    return TheUser(userId: user.uid);
+  }
+
+  Future signInWithEmailAndPassword(String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(
-          email: _email, password: _password);
-    } on FirebaseAuthException {
-      print("Error logging user into Firebase");
+      UserCredential result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      User? firebaseUser = result.user;
+      return _userFromFirebaseUser(firebaseUser!);
     } catch (e) {
-      print(e);
+      print(e.toString());
+      return null;
+    }
+  }
+
+  // Future<void> loginUsingEmailAndPassword(
+  //     String _email, String _password) async {
+  //   try {
+  //     await _auth.signInWithEmailAndPassword(
+  //         email: _email, password: _password);
+  //   } on FirebaseAuthException {
+  //     print("Error logging user into Firebase");
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  Future signUpWithEmailAndPassword(String email, String password) async {
+    try {
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      User? firebaseUser = result.user;
+      return _userFromFirebaseUser(firebaseUser!);
+    } catch (e) {
+      print(e.toString());
+      return null;
     }
   }
 
@@ -75,11 +104,29 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
+  // Future<void> logout() async {
+  //   try {
+  //     await _auth.signOut();
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
+
+  Future resetPass(String email) async {
     try {
-      await _auth.signOut();
+      return await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
-      print(e);
+      print(e.toString());
+      return null;
+    }
+  }
+
+  Future signOut() async {
+    try {
+      return await _auth.signOut();
+    } catch (e) {
+      print(e.toString());
+      return null;
     }
   }
 }

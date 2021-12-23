@@ -1,3 +1,5 @@
+import 'package:chatify_app/providers/chats_page_provider.dart';
+import 'package:chatify_app/providers/users_page_provider.dart';
 import 'package:chatify_app/services/shared_preference_function.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +20,14 @@ import './pages/home_page.dart';
 
 void main() {
   runApp(
+
+    // MultiProvider(providers:
+    // [
+    // ChangeNotifierProvider(create: (context) => AuthenticationProvider(),),
+    // ChangeNotifierProvider(create: (context) => UsersPageProvider(_auth),),
+    // ChangeNotifierProvider(create: (context) => ChatsPageProvider(_auth),),,
+    // ])
+
     SplashPage(
       key: UniqueKey(),
       onInitializationComplete: () {
